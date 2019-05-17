@@ -34,7 +34,7 @@ class ChooseAreaViewModel(private val reposittory: PlaceRepository) : ViewModel(
 
     var selectedCounty: County? = null
 
-    lateinit var province: MutableList<Province>
+    lateinit var provinces: MutableList<Province>
 
     lateinit var cities: MutableList<City>
 
@@ -48,11 +48,11 @@ class ChooseAreaViewModel(private val reposittory: PlaceRepository) : ViewModel(
     fun getProvince() {
         currentLevel.value = LEVEL_PROVINCE
         launch {
-            province = reposittory.getProvinceList()//异步获取数据，用suspend
+            provinces = reposittory.getProvinceList()//异步获取数据，用suspend
             /**
              * 将province列表转化成string列表
              */
-            dataList.addAll(province.map { it.provinceName })
+            dataList.addAll(provinces.map { it.provinceName })
         }
     }
 
@@ -75,9 +75,32 @@ class ChooseAreaViewModel(private val reposittory: PlaceRepository) : ViewModel(
         }
     }
 
-    fun onListViewItemClick(parent: AdapterView<*>, view: View, position:Int, id:Long){
-        when{
+    fun onListViewItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+        //when替代了switch
+        when {
+            currentLevel.value == LEVEL_PROVINCE -> {
+                selectedProvince = provinces[position]
+                getCities()
+            }currentLevel.value == LEVEL_CITY -> {
+                selectedCity = cities[position]
+                getCounties()
+            }currentLevel.value == LEVEL_COUNTY -> {
+                selectedCounty = counties[position]
+                areaSelected.value=true
+            }
+        }
+    }
 
+    /**
+     * 返回
+     * 当时地区时，点击返回，获取城市
+     * 当是城市时，点击返回，获取省份
+     */
+    fun onBack(){
+        if (currentLevel.value== LEVEL_COUNTY) {
+            getCities()
+        }else if (currentLevel.value== LEVEL_CITY){
+            getProvince()
         }
     }
 
